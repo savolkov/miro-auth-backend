@@ -9,6 +9,7 @@ const db = redis.createClient({
 });
 const getAsync = promisify(db.get).bind(db);
 const setAsync = promisify(db.set).bind(db);
+const expireAsync = promisify(db.expire).bind(db);
 
 db.on('error', (err) => { console.log(`Redis error: ${err}`); });
 db.on('ready', () => { console.log('Redis is ready'); });
@@ -66,6 +67,7 @@ app.get('/oauth', async (req: Request, res: Response) => {
   );
   try {
     await setAsync(state, figmaResponse.data.access_token);
+    await expireAsync(state, 600);
   } catch (err) {
     return res.status(500).send('Cache error.');
   }
