@@ -1,6 +1,7 @@
 import express, { Application, Request, Response } from 'express';
 import axios from 'axios';
 import redis from 'redis';
+import cors from 'cors';
 import { promisify } from 'util';
 
 const db = redis.createClient({
@@ -15,6 +16,7 @@ db.on('error', (err) => { console.log(`Redis error: ${err}`); });
 db.on('ready', () => { console.log('Redis is ready'); });
 
 const app: Application = express();
+app.use(cors());
 const port = process.env.PORT || 3000;
 
 // app.post('/preauth', async (req: Request, res: Response) => {
