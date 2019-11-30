@@ -20,17 +20,6 @@ const app: Application = express();
 app.use(cors());
 const port = process.env.PORT || 3000;
 
-// app.post('/preauth', async (req: Request, res: Response) => {
-//   if (!req.query.state) {
-//     return res.status(500).send('State or was not passed');
-//   }
-//
-//   const { state } = req.query;
-//   db.set(state, '');
-//   db.expire(state, 600);
-//   return res.sendStatus(200);
-// });
-
 app.get('/postauth', async (req: Request, res: Response) => {
   if (!req.query.state) {
     return res.status(500).send('State was not passed');

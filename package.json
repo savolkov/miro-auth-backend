@@ -26,7 +26,6 @@
   "scripts": {
     "start": "node .build/index.js",
     "build": "tsc",
-    "postinstall": "yarn build",
-    "dev": "tsc && node .build/index.js"
+    "postinstall": "yarn build"
   }
 }
