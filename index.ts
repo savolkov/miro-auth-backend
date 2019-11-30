@@ -1,12 +1,13 @@
 import express, { Application, Request, Response } from 'express';
-import axios from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import redis from 'redis';
 import cors from 'cors';
 import { promisify } from 'util';
 
+const redisUrl = process.env.REDIS_URL || 'redis://h:p69b578075c815bf24fac8acb100296cdc4c342acacfa3cf1166fccb4d24c8d2d@ec2-52-21-56-63.compute-1.amazonaws.com:27209';
 const db = redis.createClient({
   // TODO: move to env
-  url: 'redis://h:p69b578075c815bf24fac8acb100296cdc4c342acacfa3cf1166fccb4d24c8d2d@ec2-3-226-148-238.compute-1.amazonaws.com:31599',
+  url: redisUrl,
 });
 const getAsync = promisify(db.get).bind(db);
 const setAsync = promisify(db.set).bind(db);
@@ -57,16 +58,23 @@ app.get('/oauth', async (req: Request, res: Response) => {
   const { state } = req.query;
   const { code } = req.query;
   /* eslint-disable @typescript-eslint/camelcase */
-  const figmaResponse = await axios.post(
-    'https://www.figma.com/api/oauth/token',
-    {
-      client_id: 'OCNljv8VVPqctvRMUglYVu',
-      client_secret: 'qYimyJbKlRfzTYW846N2QFTMCjgxKX',
-      redirect_uri: 'https://miro-auth-stage.herokuapp.com/oauth',
-      code,
-      grant_type: 'authorization_code',
-    },
-  );
+  let figmaResponse: AxiosResponse;
+  try {
+    figmaResponse = await axios.post(
+      'https://www.figma.com/api/oauth/token',
+      {
+        client_id: 'OCNljv8VVPqctvRMUglYVu',
+        client_secret: 'qYimyJbKlRfzTYW846N2QFTMCjgxKX',
+        redirect_uri: 'https://miro-auth-stage.herokuapp.com/oauth',
+        code,
+        grant_type: 'authorization_code',
+      },
+    );
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Figma server error.');
+  }
+
   try {
     await setAsync(state, figmaResponse.data.access_token);
     await expireAsync(state, 600);
